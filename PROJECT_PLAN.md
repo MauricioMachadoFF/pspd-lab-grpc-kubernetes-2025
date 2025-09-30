@@ -2,7 +2,84 @@
 
 ## Overview
 
-This project implements a distributed microservices architecture with QR Code Generator (Service A) and URL Shortener (Service B) microservices, comparing gRPC and REST/JSON communication approaches.
+This project implements a distributed microservices architecture using **dual implementation approaches**:
+
+1. **Extended 4-Service Architecture**: Mixed protocol system with gRPC services (QR Generator, URL Shortener) and REST services (User Management, Analytics Dashboard) running simultaneously
+2. **Academic Comparison Implementation**: Same core services (QR Generator, URL Shortener) implemented in both gRPC and REST/JSON for performance comparison studies
+
+The system features configurable protocol switching in the API Gateway, allowing for comprehensive performance analysis while maintaining a realistic mixed-protocol production architecture.
+
+## Project Structure
+
+```
+pspd-lab-grpc-kubernetes-2025/
+├── proto/                           # Protocol Buffer definitions
+│   ├── common.proto                 # Shared message types
+│   ├── qr_service.proto            # QR Code Generator gRPC service
+│   └── url_service.proto           # URL Shortener gRPC service
+├── services/
+│   ├── gateway/                     # Module P - API Gateway/Main Service
+│   │   ├── src/
+│   │   ├── config/
+│   │   └── Dockerfile
+│   ├── grpc/                        # gRPC Microservices
+│   │   ├── qr-generator/           # Service A - QR Code Generator (gRPC)
+│   │   │   ├── src/
+│   │   │   ├── proto-gen/          # Generated gRPC code
+│   │   │   └── Dockerfile
+│   │   └── url-shortener/          # Service B - URL Shortener (gRPC)
+│   │       ├── src/
+│   │       ├── proto-gen/          # Generated gRPC code
+│   │       └── Dockerfile
+│   └── rest/                        # REST/JSON Services
+│       ├── qr-generator/           # QR Code Generator (REST - for comparison)
+│       │   ├── src/
+│       │   ├── api/
+│       │   └── Dockerfile
+│       ├── url-shortener/          # URL Shortener (REST - for comparison)
+│       │   ├── src/
+│       │   ├── api/
+│       │   └── Dockerfile
+│       ├── user-management/        # Service C - User Management (REST)
+│       │   ├── src/
+│       │   ├── api/
+│       │   └── Dockerfile
+│       └── analytics/              # Service D - Analytics Dashboard (REST)
+│           ├── src/
+│           ├── api/
+│           └── Dockerfile
+├── k8s/                            # Kubernetes manifests
+│   ├── namespaces/
+│   ├── deployments/
+│   ├── services/
+│   ├── configmaps/
+│   └── ingress/
+├── monitoring/                     # Observability stack
+│   ├── prometheus/
+│   ├── grafana/
+│   └── jaeger/
+├── tests/                          # Testing suites
+│   ├── unit/
+│   ├── integration/
+│   └── performance/
+└── docs/                           # Additional documentation
+    ├── api/
+    ├── deployment/
+    └── performance/
+```
+
+### Service Implementation Strategy
+
+**Dual Protocol Implementation**:
+- **QR Generator & URL Shortener**: Implemented in **both** gRPC and REST for academic comparison
+- **User Management & Analytics**: Implemented **only** in REST as extended services
+- **API Gateway**: Routes requests based on configuration flags and service type
+
+**Simultaneous Operation**:
+- All 6 services run concurrently (2 gRPC + 4 REST)
+- Gateway provides unified interface
+- Performance testing can compare gRPC vs REST for identical services
+- Extended services provide realistic production functionality
 
 ---
 
@@ -184,30 +261,51 @@ This project implements a distributed microservices architecture with QR Code Ge
 
 ---
 
-## Phase 5: Main Service Integration
+## Phase 5: API Gateway Development
 
-### 5.1 Web Server with gRPC Client Integration
+### 5.1 Core API Gateway Implementation
 
-**Description**: Implement main web service that delegates calls to microservices via gRPC
+**Description**: Implement the main API Gateway (Module P) that serves as the unified entry point for all services
 **Tasks**:
 
-- Create web server (Express.js/FastAPI/Gin)
-- Implement gRPC clients for both microservices
-- Create REST endpoints that proxy to gRPC services
-- Implement load balancing and failover
-- Add request/response transformation
+- Create web server (Express.js/FastAPI/Gin) with HTTP endpoints
+- Implement gRPC clients for QR Generator and URL Shortener services
+- Create unified REST API endpoints that abstract underlying protocols
+- Add request/response transformation and validation
+- Implement service discovery and health checking
 
 **Acceptance Criteria**:
 
-- [ ] Web server handles HTTP requests
-- [ ] gRPC calls are made successfully
-- [ ] Load balancing works correctly
-- [ ] Failover scenarios are handled
-- [ ] Response times are acceptable
+- [ ] Web server handles HTTP requests from clients
+- [ ] gRPC calls to backend services work successfully
+- [ ] Unified API provides consistent interface
+- [ ] Request validation and transformation work correctly
+- [ ] Health checks monitor backend service status
 
 **Weight**: 4
 
-### 5.2 Frontend Integration
+### 5.2 Protocol Abstraction Layer
+
+**Description**: Create abstraction layer that allows switching between gRPC and REST backends
+**Tasks**:
+
+- Design configurable routing system
+- Implement protocol-agnostic service interfaces
+- Add configuration management for protocol selection
+- Create fallback and retry mechanisms
+- Add load balancing for multiple service instances
+
+**Acceptance Criteria**:
+
+- [ ] Gateway can route to gRPC services transparently
+- [ ] Configuration allows easy protocol switching
+- [ ] Load balancing distributes requests effectively
+- [ ] Fallback mechanisms handle service failures
+- [ ] Performance monitoring tracks routing decisions
+
+**Weight**: 3
+
+### 5.3 Frontend Integration
 
 **Description**: Create frontend application that interacts with the main service
 **Tasks**:
@@ -230,49 +328,71 @@ This project implements a distributed microservices architecture with QR Code Ge
 
 ---
 
-## Phase 6: REST/JSON Alternative Implementation
+## Phase 6: REST/JSON Alternative Implementation & Extended Services
 
-### 6.1 REST/JSON API Implementation
+### 6.1 REST/JSON Alternative Services (Academic Comparison)
 
-**Description**: Implement REST/JSON endpoints for both microservices as an alternative to gRPC
+**Description**: Implement REST/JSON versions of QR Code Generator and URL Shortener services as alternatives to gRPC for performance comparison
 **Tasks**:
 
-- Create REST endpoints for QR Code Generator
-- Create REST endpoints for URL Shortener
+- Create REST endpoints for QR Code Generator (duplicate functionality)
+- Create REST endpoints for URL Shortener (duplicate functionality)
 - Implement JSON serialization/deserialization
 - Add HTTP status code handling
 - Implement API documentation (OpenAPI/Swagger)
+- Maintain identical business logic to gRPC versions
 
 **Acceptance Criteria**:
 
-- [ ] All REST endpoints work correctly
+- [ ] REST services provide identical functionality to gRPC versions
 - [ ] JSON responses are well-structured
 - [ ] HTTP status codes are appropriate
 - [ ] API documentation is complete
-- [ ] Endpoints follow REST conventions
+- [ ] Performance benchmarking is possible
 
 **Weight**: 3
 
-### 6.2 REST/JSON Client Integration
+### 6.2 Extended REST Services (Production Architecture)
 
-**Description**: Create REST/JSON client integration in the main service
+**Description**: Implement additional REST services for User Management and Analytics Dashboard
 **Tasks**:
 
-- Implement HTTP clients for both microservices
-- Add request/response handling
-- Implement retry logic and circuit breakers
-- Add connection pooling and timeout handling
-- Create configuration for switching between gRPC and REST
+- Create User Management service (Service C) with REST APIs
+- Create Analytics Dashboard service (Service D) with REST APIs
+- Implement user authentication and session management
+- Add data aggregation and reporting features
+- Create service inter-communication patterns
 
 **Acceptance Criteria**:
 
-- [ ] HTTP clients work reliably
-- [ ] Retry logic prevents cascading failures
-- [ ] Connection pooling improves performance
-- [ ] Configuration allows easy switching
-- [ ] Timeouts are properly handled
+- [ ] User Management handles authentication and profiles
+- [ ] Analytics Dashboard aggregates data from all services
+- [ ] Services communicate with gRPC services effectively
+- [ ] REST APIs follow standard conventions
+- [ ] Services integrate with shared data layer
 
-**Weight**: 3
+**Weight**: 4
+
+### 6.3 API Gateway Configuration & Switching
+
+**Description**: Create configurable API Gateway that can route to either gRPC or REST implementations
+**Tasks**:
+
+- Implement HTTP clients for all REST services
+- Add configuration-based protocol switching
+- Implement retry logic and circuit breakers
+- Add connection pooling and timeout handling
+- Create service discovery mechanism
+
+**Acceptance Criteria**:
+
+- [ ] Gateway can switch between gRPC and REST QR/URL services
+- [ ] All 4 services (2 gRPC + 2 REST) run simultaneously
+- [ ] Configuration allows easy protocol switching
+- [ ] Load balancing works for all service types
+- [ ] Health checks monitor all services
+
+**Weight**: 4
 
 ---
 
@@ -304,19 +424,19 @@ This project implements a distributed microservices architecture with QR Code Ge
 **Description**: Containerize applications and create Kubernetes deployment manifests
 **Tasks**:
 
-- Create Dockerfiles for all services
+- Create Dockerfiles for all 6 services (Gateway + 2 gRPC + 4 REST)
 - Build and optimize container images
-- Create Kubernetes deployment manifests
-- Configure service discovery
-- Set up ingress and load balancing
+- Create Kubernetes deployment manifests for mixed architecture
+- Configure service discovery for both gRPC and REST services
+- Set up ingress and load balancing with protocol-aware routing
 
 **Acceptance Criteria**:
 
-- [ ] All services are containerized
-- [ ] Container images are optimized
-- [ ] Kubernetes manifests deploy successfully
-- [ ] Services can communicate within cluster
-- [ ] External access works through ingress
+- [ ] All 6 services are containerized and deployed
+- [ ] Container images are optimized for each service type
+- [ ] Kubernetes manifests support both gRPC and REST protocols
+- [ ] Service mesh enables secure inter-service communication
+- [ ] External access works through protocol-aware ingress
 
 **Weight**: 4
 
@@ -324,68 +444,68 @@ This project implements a distributed microservices architecture with QR Code Ge
 
 ## Phase 8: Performance Testing and Analysis
 
-### 8.1 gRPC Performance Testing
+### 8.1 Academic Comparison Testing (gRPC vs REST)
 
-**Description**: Conduct comprehensive performance testing of gRPC implementation
+**Description**: Conduct direct performance comparison between identical gRPC and REST implementations
 **Tasks**:
 
-- Create load testing scenarios
-- Measure latency and throughput
-- Test different payload sizes
-- Analyze resource utilization
-- Document performance characteristics
+- Create identical load testing scenarios for both QR Generator implementations
+- Create identical load testing scenarios for both URL Shortener implementations
+- Measure latency, throughput, and resource utilization for both protocols
+- Test different payload sizes and streaming scenarios
+- Document performance characteristics and bottlenecks
 
 **Acceptance Criteria**:
 
-- [ ] Load tests cover realistic scenarios
-- [ ] Performance metrics are collected
-- [ ] Resource utilization is measured
-- [ ] Bottlenecks are identified
-- [ ] Results are documented
-
-**Weight**: 3
-
-### 8.2 REST/JSON Performance Testing
-
-**Description**: Conduct comprehensive performance testing of REST/JSON implementation
-**Tasks**:
-
-- Create equivalent load testing scenarios
-- Measure latency and throughput
-- Test different payload sizes
-- Analyze resource utilization
-- Compare with gRPC results
-
-**Acceptance Criteria**:
-
-- [ ] Load tests match gRPC scenarios
-- [ ] Performance metrics are collected
-- [ ] Resource utilization is measured
-- [ ] Fair comparison is established
-- [ ] Results are documented
-
-**Weight**: 3
-
-### 8.3 Comparative Performance Analysis
-
-**Description**: Create comprehensive comparison between gRPC and REST/JSON approaches
-**Tasks**:
-
-- Analyze performance test results
-- Compare latency, throughput, and resource usage
-- Evaluate development complexity
-- Assess operational considerations
-- Create recommendation report
-
-**Acceptance Criteria**:
-
-- [ ] Performance comparison is thorough
-- [ ] Multiple metrics are considered
-- [ ] Development effort is compared
-- [ ] Operational aspects are evaluated
-- [ ] Clear recommendations are provided
+- [ ] Load tests are identical for gRPC and REST versions
+- [ ] Performance metrics are collected for fair comparison
+- [ ] Resource utilization is measured across both protocols
+- [ ] Streaming vs HTTP polling performance is compared
+- [ ] Academic findings are documented with statistical significance
 
 **Weight**: 4
+
+### 8.2 Mixed Architecture Performance Testing
+
+**Description**: Test performance of the complete 6-service mixed architecture system
+**Tasks**:
+
+- Create end-to-end load testing scenarios
+- Test inter-service communication performance (gRPC ↔ REST)
+- Measure API Gateway routing and protocol conversion overhead
+- Test concurrent usage of all services simultaneously
+- Analyze system behavior under various load patterns
+
+**Acceptance Criteria**:
+
+- [ ] End-to-end performance is measured and acceptable
+- [ ] Inter-service communication latency is documented
+- [ ] API Gateway overhead is quantified
+- [ ] System scales appropriately under load
+- [ ] Bottlenecks in mixed architecture are identified
+
+**Weight**: 4
+
+### 8.3 Comprehensive Performance Analysis
+
+**Description**: Create detailed analysis and recommendations based on all testing results
+**Tasks**:
+
+- Analyze academic comparison results (gRPC vs REST)
+- Evaluate mixed architecture performance characteristics
+- Compare development complexity and operational overhead
+- Assess scalability and maintenance considerations
+- Create comprehensive recommendation report
+
+**Acceptance Criteria**:
+
+- [ ] Academic comparison provides clear statistical evidence
+- [ ] Mixed architecture benefits and trade-offs are documented
+- [ ] Development and operational complexity is quantified
+- [ ] Scalability patterns are identified and documented
+- [ ] Actionable recommendations are provided for different use cases
+
+**Weight**: 5
 
 ---
 
