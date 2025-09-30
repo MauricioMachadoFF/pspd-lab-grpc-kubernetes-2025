@@ -1,7 +1,9 @@
 # Extended Architecture - 4 Microservices (2 REST + 2 gRPC)
 
+![Extended Architecture](../assets/architecture/extended-architecture-4microservices.png)
+
 ```mermaid
-graph TB
+flowchart TB
     subgraph "External Network"
         Client[Web Client<br/>Browser]
     end

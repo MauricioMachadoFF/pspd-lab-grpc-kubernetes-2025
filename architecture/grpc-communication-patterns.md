@@ -1,6 +1,9 @@
 # gRPC Communication Patterns
 
 ## 1. Unary RPC Pattern
+
+![Unary RPC Pattern](../assets/architecture/grpc-pattern-unary.png)
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -19,6 +22,9 @@ sequenceDiagram
 - URL shortening requests
 
 ## 2. Server Streaming RPC Pattern
+
+![Server Streaming RPC Pattern](../assets/architecture/grpc-pattern-server-streaming.png)
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -42,6 +48,9 @@ sequenceDiagram
 - Live user activity feeds
 
 ## 3. Client Streaming RPC Pattern
+
+![Client Streaming RPC Pattern](../assets/architecture/grpc-pattern-client-streaming.png)
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -65,6 +74,9 @@ sequenceDiagram
 - Batch analytics data submission
 
 ## 4. Bidirectional Streaming RPC Pattern
+
+![Bidirectional Streaming RPC Pattern](../assets/architecture/grpc-pattern-bidirectional.png)
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -94,6 +106,8 @@ sequenceDiagram
 - Live monitoring and alerts
 
 ## Complete gRPC Service Architecture
+
+![Complete gRPC Service Architecture](../assets/architecture/grpc-service-complete-architecture.png)
 
 ```mermaid
 graph TB

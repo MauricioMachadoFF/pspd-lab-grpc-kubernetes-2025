@@ -2,6 +2,8 @@
 
 ## Complete System Interaction Flow
 
+![System Interactions Sequence](../assets/architecture/system-interactions-sequence.png)
+
 ```mermaid
 sequenceDiagram
     participant Client as Web Client
@@ -75,6 +77,8 @@ sequenceDiagram
 
 ### gRPC Service Communication
 
+![gRPC Communication Patterns](../assets/architecture/grpc-communication-patterns.png)
+
 ```mermaid
 flowchart LR
     subgraph "gRPC Communication (HTTP/2)"
@@ -112,6 +116,8 @@ flowchart LR
 ```
 
 ### REST Service Communication
+
+![REST Communication Patterns](../assets/architecture/rest-communication-patterns.png)
 
 ```mermaid
 flowchart LR
@@ -257,6 +263,8 @@ graph TB
 ```
 
 ## Performance Comparison Matrix
+
+![Performance Comparison Matrix](../assets/architecture/performance-comparison-matrix.png)
 
 | Aspect | gRPC Services | REST Services |
 |--------|---------------|---------------|

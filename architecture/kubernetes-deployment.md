@@ -1,5 +1,7 @@
 # Kubernetes Deployment Architecture
 
+![Kubernetes Deployment Architecture](../assets/architecture/kubernetes-deployment-architecture.png)
+
 ```mermaid
 graph TB
     subgraph "External Network"

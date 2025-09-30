@@ -1,5 +1,7 @@
 # Main Architecture - Original PDF Requirements
 
+![Main Architecture](../assets/architecture/main-architecture-3module.png)
+
 ```mermaid
 graph TB
     subgraph "External Network"
