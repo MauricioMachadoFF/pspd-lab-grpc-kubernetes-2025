@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option csharp_namespace = "MicroserviceA_LinkShortener";
+
+package linkshortener;
+
+import "google/api/annotations.proto";
+
+service LinkShortener {
+  rpc CreateLink(CreateLinkRequest) returns (CreateLinkReply) {
+    option (google.api.http) = {
+      post: "/v1/links"
+      body: "*"
+    };
+  }
+
+  rpc GetUrl(GetUrlRequest) returns (GetUrlReply) {
+    option (google.api.http) = {
+      get: "/{shortUrl}"
+    };
+  }
+}
+
+message CreateLinkRequest {
+    string url = 1;
+}
+
+message CreateLinkReply {
+    string shortUrl = 1;
+}
+
+message GetUrlRequest {
+    string shortUrl = 1;
+}
+
+message GetUrlReply {
+    string url = 1;
+}
