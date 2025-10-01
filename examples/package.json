@@ -6,12 +6,15 @@
     "proto:gen1": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example01/protos example01/protos/*.proto",
     "proto:gen2": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example02/protos example02/protos/*.proto",
     "proto:gen3": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example03/protos example03/protos/*.proto",
+    "proto:gen4": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example04/protos example04/protos/*.proto",
     "start:ex1-server": "node example01/server.js",
     "start:ex1-client": "node example01/client.js",
     "start:ex2-server": "node example02/server.js",
     "start:ex2-client": "node example02/client.js",
     "start:ex3-server": "node example03/server.js",
-    "start:ex3-client": "node example03/client.js"
+    "start:ex3-client": "node example03/client.js",
+    "start:ex4-server": "node example04/server.js",
+    "start:ex4-client": "node example04/client.js"
   },
   "keywords": [],
   "author": "",
