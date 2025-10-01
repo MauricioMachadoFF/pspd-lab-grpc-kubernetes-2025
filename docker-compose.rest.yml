@@ -1,0 +1,144 @@
+version: '3.8'
+
+# REST Services for Academic Comparison with gRPC
+# This compose file runs all 4 REST services simultaneously
+
+services:
+  # Academic Comparison Services (equivalent to gRPC implementations)
+
+  qr-generator-rest:
+    build:
+      context: ./services/rest/qr-generator
+      dockerfile: Dockerfile
+    container_name: qr-generator-rest
+    ports:
+      - "8082:8082"
+    environment:
+      - NODE_ENV=production
+      - PORT=8082
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - rest-services
+    labels:
+      - "service.type=rest"
+      - "service.comparison=academic"
+      - "service.protocol=http"
+
+  url-shortener-rest:
+    build:
+      context: ./services/rest/url-shortener
+      dockerfile: Dockerfile
+    container_name: url-shortener-rest
+    ports:
+      - "8083:8083"
+    environment:
+      - NODE_ENV=production
+      - PORT=8083
+      - LOG_LEVEL=info
+      - BASE_URL=http://localhost:8083
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - rest-services
+    labels:
+      - "service.type=rest"
+      - "service.comparison=academic"
+      - "service.protocol=http"
+
+  # Extended Production Services (REST only)
+
+  user-management-rest:
+    build:
+      context: ./services/rest/user-management
+      dockerfile: Dockerfile
+    container_name: user-management-rest
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - rest-services
+    labels:
+      - "service.type=rest"
+      - "service.comparison=production"
+      - "service.protocol=http"
+
+  analytics-rest:
+    build:
+      context: ./services/rest/analytics
+      dockerfile: Dockerfile
+    container_name: analytics-rest
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+      - PORT=8081
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - rest-services
+    labels:
+      - "service.type=rest"
+      - "service.comparison=production"
+      - "service.protocol=http"
+
+  # Development Tools (optional)
+
+  rest-api-gateway:
+    image: nginx:alpine
+    container_name: rest-api-gateway
+    ports:
+      - "8000:80"
+    volumes:
+      - ./config/nginx-rest.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - qr-generator-rest
+      - url-shortener-rest
+      - user-management-rest
+      - analytics-rest
+    networks:
+      - rest-services
+    labels:
+      - "service.type=gateway"
+      - "service.protocol=http"
+    profiles:
+      - gateway
+
+networks:
+  rest-services:
+    driver: bridge
+    name: rest-services-network
+
+# Optional volumes for development
+volumes:
+  rest-logs:
+    driver: local
+  rest-data:
+    driver: local
