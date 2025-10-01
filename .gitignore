@@ -72,3 +72,21 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# React build and cache
+frontend/web-client/build/
+frontend/web-client/.eslintcache
+
+# Package managers
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+
+# Test coverage
+*.lcov
+.nyc_output/
+
+# Frontend specific
+.next/
+.nuxt/
+.cache/
