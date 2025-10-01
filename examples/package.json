@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "proto:gen": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example01/protos example01/protos/*.proto",
+    "proto:gen1": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example01/protos example01/protos/*.proto",
+    "proto:gen2": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example02/protos example02/protos/*.proto",
     "start:ex1-server": "node example01/server.js",
-    "start:ex1-client": "node example01/client.js"
+    "start:ex1-client": "node example01/client.js",
+    "start:ex2-server": "node example02/server.js",
+    "start:ex2-client": "node example02/client.js"
   },
   "keywords": [],
   "author": "",
