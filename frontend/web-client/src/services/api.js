@@ -57,6 +57,7 @@ class BaseAPI {
       const axiosConfig = {
         url,
         timeout: 10000,
+        withCredentials: true, // Required for CORS with credentials
         ...options,
         headers: {
           'Content-Type': 'application/json',

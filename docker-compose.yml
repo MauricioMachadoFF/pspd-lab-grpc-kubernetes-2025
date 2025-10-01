@@ -19,7 +19,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080;http://+:8081
-      - Kestrel__EndpointDefaults__Protocols=Http2
+      - Kestrel__EndpointDefaults__Protocols=Http1AndHttp2
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
@@ -46,7 +46,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080;http://+:8081
-      - Kestrel__EndpointDefaults__Protocols=Http2
+      - Kestrel__EndpointDefaults__Protocols=Http1AndHttp2
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
