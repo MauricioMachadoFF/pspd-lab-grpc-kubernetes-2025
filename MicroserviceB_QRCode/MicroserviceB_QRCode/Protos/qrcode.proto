@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option csharp_namespace = "MicroserviceA_LinkShortener";
+
+package qrcode;
+
+import "google/api/annotations.proto";
+
+service QrcodeGenerator {
+  rpc CreateQR(CreateQRRequest) returns (CreateQRReply) {
+    option (google.api.http) = {
+      post: "/v1/qrcode/encode"
+      body: "*"
+    };
+  }
+
+  rpc DecodeQR(DecodeQRRequest) returns (DecodeQRReply) {
+    option (google.api.http) = {
+      post: "/v1/qrcode/decode"
+      body: "*"
+    };
+  }
+}
+
+message CreateQRRequest {
+  string url = 1; 
+}
+
+message CreateQRReply {
+  string qrCodeBase64 = 1; 
+}
+
+message DecodeQRRequest {
+  string qrCodeBase64 = 1; 
+}
+
+message DecodeQRReply {
+  string url = 1; 
+}
