@@ -1,0 +1,21 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "proto:gen": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:. --grpc_out=grpc_js:. -I ./example01/protos example01/protos/*.proto",
+    "start:ex1-server": "node example01/server.js",
+    "start:ex1-client": "node example01/client.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.0",
+    "google-protobuf": "^4.0.0"
+  },
+  "devDependencies": {
+    "grpc-tools": "^1.13.0"
+  }
+}
