@@ -1,28 +1,52 @@
 # PSPD Lab - gRPC vs REST Microservices Management
 # Academic comparison project with dual protocol implementation
+# Complete environment: 2 gRPC + 4 REST + 1 Frontend = 7 services total
 
 # Configuration
 PROJECT_NAME = pspd-lab-grpc-kubernetes-2025
 DOCKER_REGISTRY ?= localhost:5000
 VERSION ?= latest
 
-# Service definitions
+# gRPC Service definitions
+GRPC_LINK_SERVICE = microservice-a-grpc
+GRPC_QR_SERVICE = microservice-b-grpc
+
+# REST Service definitions
 QR_REST_SERVICE = qr-generator-rest
 URL_REST_SERVICE = url-shortener-rest
 USER_MGMT_SERVICE = user-management-rest
 ANALYTICS_SERVICE = analytics-rest
 
-# Docker image names
+# Frontend
+WEB_CLIENT = web-client
+
+# Docker image names - gRPC
+GRPC_LINK_IMAGE = $(DOCKER_REGISTRY)/$(GRPC_LINK_SERVICE):$(VERSION)
+GRPC_QR_IMAGE = $(DOCKER_REGISTRY)/$(GRPC_QR_SERVICE):$(VERSION)
+
+# Docker image names - REST
 QR_REST_IMAGE = $(DOCKER_REGISTRY)/$(QR_REST_SERVICE):$(VERSION)
 URL_REST_IMAGE = $(DOCKER_REGISTRY)/$(URL_REST_SERVICE):$(VERSION)
 USER_MGMT_IMAGE = $(DOCKER_REGISTRY)/$(USER_MGMT_SERVICE):$(VERSION)
 ANALYTICS_IMAGE = $(DOCKER_REGISTRY)/$(ANALYTICS_SERVICE):$(VERSION)
 
-# Ports configuration
+# Docker image names - Frontend
+WEB_CLIENT_IMAGE = $(DOCKER_REGISTRY)/$(WEB_CLIENT):$(VERSION)
+
+# Ports configuration - gRPC
+GRPC_LINK_PORT = 5001
+GRPC_LINK_HEALTH_PORT = 5002
+GRPC_QR_PORT = 5003
+GRPC_QR_HEALTH_PORT = 5004
+
+# Ports configuration - REST
 QR_REST_PORT = 8082
 URL_REST_PORT = 8083
 USER_MGMT_PORT = 8080
 ANALYTICS_PORT = 8081
+
+# Ports configuration - Frontend
+WEB_CLIENT_PORT = 3000
 
 # Colors for output
 RED = \033[0;31m
@@ -45,13 +69,14 @@ help: ## Display this help message
 # DEVELOPMENT COMMANDS
 # ================================
 
-install-deps: ## Install dependencies for all REST services
-	@echo "$(BLUE)Installing dependencies for all REST services...$(NC)"
+install-deps: ## Install dependencies for all Node.js services
+	@echo "$(BLUE)Installing dependencies for all Node.js services...$(NC)"
 	@cd services/rest/qr-generator && npm install
 	@cd services/rest/url-shortener && npm install
 	@cd services/rest/user-management && npm install
 	@cd services/rest/analytics && npm install
-	@echo "$(GREEN)✓ Dependencies installed for all 4 services$(NC)"
+	@cd frontend/web-client && npm install
+	@echo "$(GREEN)✓ Dependencies installed for 4 REST services + 1 frontend$(NC)"
 
 test: ## Run unit tests for all REST services
 	@echo "$(BLUE)Running tests for all REST services...$(NC)"
@@ -77,8 +102,24 @@ lint: ## Run linting for all services
 # DOCKER BUILD COMMANDS
 # ================================
 
-build: build-qr-rest build-url-rest build-user-mgmt build-analytics ## Build all REST service images
-	@echo "$(GREEN)✓ All REST services built successfully$(NC)"
+build: build-grpc build-rest build-frontend ## Build all services (gRPC + REST + Frontend)
+	@echo "$(GREEN)✓ All services built successfully$(NC)"
+
+build-grpc: build-grpc-link build-grpc-qr ## Build gRPC microservices
+	@echo "$(GREEN)✓ All gRPC services built$(NC)"
+
+build-rest: build-qr-rest build-url-rest build-user-mgmt build-analytics ## Build REST microservices
+	@echo "$(GREEN)✓ All REST services built$(NC)"
+
+build-grpc-link: ## Build gRPC Link Shortener (Microservice A)
+	@echo "$(BLUE)Building gRPC Link Shortener (Microservice A)...$(NC)"
+	@docker build -t $(GRPC_LINK_IMAGE) -f MicroserviceA_LinkShortener/MicroserviceA_LinkShortener/Dockerfile MicroserviceA_LinkShortener/
+	@echo "$(GREEN)✓ gRPC Link Shortener built: $(GRPC_LINK_IMAGE)$(NC)"
+
+build-grpc-qr: ## Build gRPC QR Generator (Microservice B)
+	@echo "$(BLUE)Building gRPC QR Generator (Microservice B)...$(NC)"
+	@docker build -t $(GRPC_QR_IMAGE) -f MicroserviceB_QRCode/MicroserviceB_QRCode/Dockerfile MicroserviceB_QRCode/
+	@echo "$(GREEN)✓ gRPC QR Generator built: $(GRPC_QR_IMAGE)$(NC)"
 
 build-qr-rest: ## Build QR Generator REST service image
 	@echo "$(BLUE)Building QR Generator REST service...$(NC)"
@@ -100,50 +141,79 @@ build-analytics: ## Build Analytics service image
 	@docker build -t $(ANALYTICS_IMAGE) services/rest/analytics/
 	@echo "$(GREEN)✓ Analytics image built: $(ANALYTICS_IMAGE)$(NC)"
 
+build-frontend: ## Build Frontend Web Client
+	@echo "$(BLUE)Building Frontend Web Client...$(NC)"
+	@docker build -t $(WEB_CLIENT_IMAGE) frontend/web-client/
+	@echo "$(GREEN)✓ Frontend built: $(WEB_CLIENT_IMAGE)$(NC)"
+
 push: ## Push all images to registry
 	@echo "$(BLUE)Pushing images to registry...$(NC)"
+	@docker push $(GRPC_LINK_IMAGE)
+	@docker push $(GRPC_QR_IMAGE)
 	@docker push $(QR_REST_IMAGE)
 	@docker push $(URL_REST_IMAGE)
 	@docker push $(USER_MGMT_IMAGE)
 	@docker push $(ANALYTICS_IMAGE)
+	@docker push $(WEB_CLIENT_IMAGE)
 	@echo "$(GREEN)✓ All images pushed to registry$(NC)"
 
 # ================================
 # DOCKER COMPOSE COMMANDS
 # ================================
 
-up: build ## Start all REST services with docker-compose
-	@echo "$(BLUE)Starting all REST services...$(NC)"
-	@docker-compose -f docker-compose.rest.yml up -d
-	@echo "$(GREEN)✓ All REST services are running$(NC)"
-	@echo "$(YELLOW)Service URLs:$(NC)"
-	@echo "  QR Generator REST:  http://localhost:$(QR_REST_PORT)"
-	@echo "  URL Shortener REST: http://localhost:$(URL_REST_PORT)"
-	@echo "  User Management:    http://localhost:$(USER_MGMT_PORT)"
-	@echo "  Analytics:          http://localhost:$(ANALYTICS_PORT)"
+up: build ## Start all services (gRPC + REST + Frontend) with docker-compose
+	@echo "$(BLUE)Starting all services...$(NC)"
+	@docker-compose up -d
+	@echo "$(GREEN)✓ All services are running$(NC)"
+	@echo ""
+	@echo "$(YELLOW)═══════════════════════════════════════════════════$(NC)"
+	@echo "$(YELLOW)gRPC Services (with Swagger):$(NC)"
+	@echo "  Link Shortener (A):  http://localhost:$(GRPC_LINK_PORT)"
+	@echo "    - Swagger UI:      http://localhost:$(GRPC_LINK_PORT)/swagger"
+	@echo "  QR Generator (B):    http://localhost:$(GRPC_QR_PORT)"
+	@echo "    - Swagger UI:      http://localhost:$(GRPC_QR_PORT)/swagger"
+	@echo ""
+	@echo "$(YELLOW)REST Services:$(NC)"
+	@echo "  QR Generator:        http://localhost:$(QR_REST_PORT)"
+	@echo "  URL Shortener:       http://localhost:$(URL_REST_PORT)"
+	@echo "  User Management:     http://localhost:$(USER_MGMT_PORT)"
+	@echo "  Analytics:           http://localhost:$(ANALYTICS_PORT)"
+	@echo ""
+	@echo "$(YELLOW)Frontend:$(NC)"
+	@echo "  Web Client:          http://localhost:$(WEB_CLIENT_PORT)"
+	@echo "$(YELLOW)═══════════════════════════════════════════════════$(NC)"
 
-down: ## Stop all REST services
-	@echo "$(BLUE)Stopping all REST services...$(NC)"
-	@docker-compose -f docker-compose.rest.yml down
-	@echo "$(GREEN)✓ All REST services stopped$(NC)"
+down: ## Stop all services
+	@echo "$(BLUE)Stopping all services...$(NC)"
+	@docker-compose down
+	@echo "$(GREEN)✓ All services stopped$(NC)"
 
-restart: down up ## Restart all REST services
+restart: down up ## Restart all services
 
 logs: ## View logs from all services
 	@echo "$(BLUE)Viewing logs from all services...$(NC)"
-	@docker-compose -f docker-compose.rest.yml logs -f
+	@docker-compose logs -f
 
-logs-qr: ## View QR Generator service logs
-	@docker-compose -f docker-compose.rest.yml logs -f $(QR_REST_SERVICE)
+logs-grpc-link: ## View gRPC Link Shortener logs
+	@docker-compose logs -f $(GRPC_LINK_SERVICE)
 
-logs-url: ## View URL Shortener service logs
-	@docker-compose -f docker-compose.rest.yml logs -f $(URL_REST_SERVICE)
+logs-grpc-qr: ## View gRPC QR Generator logs
+	@docker-compose logs -f $(GRPC_QR_SERVICE)
 
-logs-user: ## View User Management service logs
-	@docker-compose -f docker-compose.rest.yml logs -f $(USER_MGMT_SERVICE)
+logs-qr-rest: ## View QR Generator REST logs
+	@docker-compose logs -f $(QR_REST_SERVICE)
 
-logs-analytics: ## View Analytics service logs
-	@docker-compose -f docker-compose.rest.yml logs -f $(ANALYTICS_SERVICE)
+logs-url-rest: ## View URL Shortener REST logs
+	@docker-compose logs -f $(URL_REST_SERVICE)
+
+logs-user: ## View User Management logs
+	@docker-compose logs -f $(USER_MGMT_SERVICE)
+
+logs-analytics: ## View Analytics logs
+	@docker-compose logs -f $(ANALYTICS_SERVICE)
+
+logs-frontend: ## View Frontend Web Client logs
+	@docker-compose logs -f $(WEB_CLIENT)
 
 # ================================
 # STANDALONE DOCKER COMMANDS
@@ -181,18 +251,30 @@ stop-all: ## Stop all standalone containers
 
 health: ## Check health of all services
 	@echo "$(BLUE)Checking health of all services...$(NC)"
-	@echo "$(YELLOW)QR Generator REST:$(NC)"
-	@curl -s http://localhost:$(QR_REST_PORT)/health | jq . 2>/dev/null || echo "$(RED)Service not responding$(NC)"
-	@echo "$(YELLOW)URL Shortener REST:$(NC)"
-	@curl -s http://localhost:$(URL_REST_PORT)/health | jq . 2>/dev/null || echo "$(RED)Service not responding$(NC)"
-	@echo "$(YELLOW)User Management:$(NC)"
-	@curl -s http://localhost:$(USER_MGMT_PORT)/health | jq . 2>/dev/null || echo "$(RED)Service not responding$(NC)"
-	@echo "$(YELLOW)Analytics:$(NC)"
-	@curl -s http://localhost:$(ANALYTICS_PORT)/health | jq . 2>/dev/null || echo "$(RED)Service not responding$(NC)"
+	@echo ""
+	@echo "$(YELLOW)gRPC Services:$(NC)"
+	@echo "  Link Shortener (A):"
+	@curl -s http://localhost:$(GRPC_LINK_HEALTH_PORT)/health 2>/dev/null && echo "$(GREEN)✓ OK$(NC)" || echo "$(RED)✗ Not responding$(NC)"
+	@echo "  QR Generator (B):"
+	@curl -s http://localhost:$(GRPC_QR_HEALTH_PORT)/health 2>/dev/null && echo "$(GREEN)✓ OK$(NC)" || echo "$(RED)✗ Not responding$(NC)"
+	@echo ""
+	@echo "$(YELLOW)REST Services:$(NC)"
+	@echo "  QR Generator REST:"
+	@curl -s http://localhost:$(QR_REST_PORT)/health | jq . 2>/dev/null || echo "$(RED)✗ Not responding$(NC)"
+	@echo "  URL Shortener REST:"
+	@curl -s http://localhost:$(URL_REST_PORT)/health | jq . 2>/dev/null || echo "$(RED)✗ Not responding$(NC)"
+	@echo "  User Management:"
+	@curl -s http://localhost:$(USER_MGMT_PORT)/health | jq . 2>/dev/null || echo "$(RED)✗ Not responding$(NC)"
+	@echo "  Analytics:"
+	@curl -s http://localhost:$(ANALYTICS_PORT)/health | jq . 2>/dev/null || echo "$(RED)✗ Not responding$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Frontend:$(NC)"
+	@echo "  Web Client:"
+	@curl -s http://localhost:$(WEB_CLIENT_PORT)/ >/dev/null 2>&1 && echo "$(GREEN)✓ OK$(NC)" || echo "$(RED)✗ Not responding$(NC)"
 
 status: ## Show status of all containers
 	@echo "$(BLUE)Container Status:$(NC)"
-	@docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter "name=qr-generator-rest\|url-shortener-rest\|user-management-rest\|analytics-rest"
+	@docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter "name=microservice-\|qr-generator-rest\|url-shortener-rest\|user-management-rest\|analytics-rest\|pspd-web-client"
 
 # ================================
 # DEVELOPMENT ENVIRONMENT
@@ -237,7 +319,7 @@ benchmark: ## Run performance benchmarks
 
 clean: ## Clean up Docker images and containers
 	@echo "$(BLUE)Cleaning up Docker resources...$(NC)"
-	@docker-compose -f docker-compose.rest.yml down -v --remove-orphans 2>/dev/null || true
+	@docker-compose down -v --remove-orphans 2>/dev/null || true
 	@docker system prune -f
 	@echo "$(GREEN)✓ Docker cleanup completed$(NC)"
 
@@ -245,7 +327,10 @@ clean-all: clean ## Complete cleanup including node_modules
 	@echo "$(BLUE)Performing complete cleanup...$(NC)"
 	@cd services/rest/qr-generator && rm -rf node_modules package-lock.json 2>/dev/null || true
 	@cd services/rest/url-shortener && rm -rf node_modules package-lock.json 2>/dev/null || true
-	@docker rmi $(QR_REST_IMAGE) $(URL_REST_IMAGE) $(USER_MGMT_IMAGE) $(ANALYTICS_IMAGE) 2>/dev/null || true
+	@cd services/rest/user-management && rm -rf node_modules package-lock.json 2>/dev/null || true
+	@cd services/rest/analytics && rm -rf node_modules package-lock.json 2>/dev/null || true
+	@cd frontend/web-client && rm -rf node_modules package-lock.json build 2>/dev/null || true
+	@docker rmi $(GRPC_LINK_IMAGE) $(GRPC_QR_IMAGE) $(QR_REST_IMAGE) $(URL_REST_IMAGE) $(USER_MGMT_IMAGE) $(ANALYTICS_IMAGE) $(WEB_CLIENT_IMAGE) 2>/dev/null || true
 	@echo "$(GREEN)✓ Complete cleanup finished$(NC)"
 
 reset: clean-all install-deps build ## Reset entire environment
@@ -255,16 +340,26 @@ reset: clean-all install-deps build ## Reset entire environment
 # ================================
 
 show-services: ## Show all service information
-	@echo "$(BLUE)REST Services Configuration:$(NC)"
-	@echo "$(YELLOW)Academic Comparison Services (equivalent gRPC functionality):$(NC)"
-	@echo "  QR Generator REST:     Port $(QR_REST_PORT) - Equivalent to gRPC QR service"
-	@echo "  URL Shortener REST:    Port $(URL_REST_PORT) - Equivalent to gRPC URL service"
+	@echo "$(BLUE)Complete PSPD Lab Service Configuration$(NC)"
 	@echo ""
-	@echo "$(YELLOW)Extended Production Services (REST only):$(NC)"
+	@echo "$(YELLOW)═══════════════════════════════════════════════════$(NC)"
+	@echo "$(YELLOW)gRPC Microservices (Academic Comparison - .NET):$(NC)"
+	@echo "  Microservice A:        Port $(GRPC_LINK_PORT) - Link Shortener (gRPC/Protobuf)"
+	@echo "  Microservice B:        Port $(GRPC_QR_PORT) - QR Code Generator (gRPC/Protobuf)"
+	@echo ""
+	@echo "$(YELLOW)REST Microservices (Academic Comparison - Node.js):$(NC)"
+	@echo "  QR Generator REST:     Port $(QR_REST_PORT) - Equivalent to Microservice B"
+	@echo "  URL Shortener REST:    Port $(URL_REST_PORT) - Equivalent to Microservice A"
+	@echo ""
+	@echo "$(YELLOW)Extended Production Services (REST - Node.js):$(NC)"
 	@echo "  User Management:       Port $(USER_MGMT_PORT) - Authentication & profiles"
-	@echo "  Analytics Dashboard:   Port $(ANALYTICS_PORT) - Data aggregation & reporting"
+	@echo "  Analytics:             Port $(ANALYTICS_PORT) - Data aggregation & reporting"
 	@echo ""
-	@echo "$(BLUE)Total Architecture: 1 Gateway + 2 gRPC + 4 REST services$(NC)"
+	@echo "$(YELLOW)Frontend (React):$(NC)"
+	@echo "  Web Client:            Port $(WEB_CLIENT_PORT) - Protocol comparison dashboard"
+	@echo ""
+	@echo "$(BLUE)Total Architecture: 2 gRPC + 4 REST + 1 Frontend = 7 services$(NC)"
+	@echo "$(YELLOW)═══════════════════════════════════════════════════$(NC)"
 
 show-endpoints: ## Show all service endpoints
 	@echo "$(BLUE)Service Endpoints:$(NC)"

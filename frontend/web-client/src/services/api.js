@@ -9,11 +9,14 @@ const API_CONFIG = {
     analytics: 'http://localhost:8081'
   },
   gRPC: {
-    // gRPC endpoints - will be implemented via REST gateway or direct gRPC-web
-    urlShortener: 'http://localhost:9093',
-    qrGenerator: 'http://localhost:9092',
-    userManagement: 'http://localhost:9090',
-    analytics: 'http://localhost:9091'
+    // gRPC endpoints - using JSON transcoding (gRPC accessible via HTTP/REST)
+    // Microservice A (Link Shortener) - Port 5001
+    urlShortener: 'http://localhost:5001',
+    // Microservice B (QR Generator) - Port 5003
+    qrGenerator: 'http://localhost:5003',
+    // REST services (no gRPC equivalent)
+    userManagement: 'http://localhost:8080',
+    analytics: 'http://localhost:8081'
   }
 };
 
@@ -54,6 +57,7 @@ class BaseAPI {
       const axiosConfig = {
         url,
         timeout: 10000,
+        withCredentials: true, // Required for CORS with credentials
         ...options,
         headers: {
           'Content-Type': 'application/json',
@@ -120,31 +124,80 @@ export class URLShortenerAPI extends BaseAPI {
   }
 
   async shortenURL(url, customCode = null, userId = null) {
-    const payload = {
-      url,
-      ...(customCode && { customCode }),
-      ...(userId && { userId })
-    };
+    if (this.protocol === 'gRPC') {
+      // gRPC Microservice A uses JSON transcoding
+      // Proto: CreateLink(CreateLinkRequest) returns (CreateLinkReply)
+      // HTTP annotation: POST /v1/links
+      const response = await this.makeRequest('urlShortener', '/v1/links', {
+        method: 'POST',
+        data: { url }  // gRPC proto only expects 'url' field
+      });
 
-    return await this.makeRequest('urlShortener', '/api/v1/url/shorten', {
-      method: 'POST',
-      data: payload
-    });
+      // Transform gRPC response to match REST format
+      return {
+        ...response,
+        data: {
+          originalUrl: url,
+          shortUrl: `http://localhost:5001/${response.data.shortUrl}`,
+          shortCode: response.data.shortUrl,
+          createdAt: new Date().toISOString()
+        }
+      };
+    } else {
+      // REST API format
+      const payload = {
+        url,
+        ...(customCode && { customCode }),
+        ...(userId && { userId })
+      };
+
+      return await this.makeRequest('urlShortener', '/api/v1/url/shorten', {
+        method: 'POST',
+        data: payload
+      });
+    }
   }
 
   async resolveURL(shortCode) {
-    return await this.makeRequest('urlShortener', `/api/v1/url/${shortCode}?redirect=false`, {
-      method: 'GET'
-    });
+    if (this.protocol === 'gRPC') {
+      // gRPC Microservice A: GetUrl(GetUrlRequest) returns (GetUrlReply)
+      // HTTP annotation: GET /{shortUrl}
+      const response = await this.makeRequest('urlShortener', `/${shortCode}`, {
+        method: 'GET'
+      });
+
+      // Transform gRPC response to match REST format
+      return {
+        ...response,
+        data: {
+          originalUrl: response.data.url,
+          shortCode: shortCode
+        }
+      };
+    } else {
+      return await this.makeRequest('urlShortener', `/api/v1/url/${shortCode}?redirect=false`, {
+        method: 'GET'
+      });
+    }
   }
 
   async getURLStats(shortCode) {
+    if (this.protocol === 'gRPC') {
+      // Stats not available in gRPC Microservice A - only basic operations
+      throw new Error('URL statistics are only available in REST mode');
+    }
+
     return await this.makeRequest('urlShortener', `/api/v1/url/${shortCode}/stats`, {
       method: 'GET'
     });
   }
 
   async bulkShortenURLs(urls, userId = null) {
+    if (this.protocol === 'gRPC') {
+      // Bulk operations not available in gRPC Microservice A
+      throw new Error('Bulk URL shortening is only available in REST mode');
+    }
+
     const payload = {
       urls,
       ...(userId && { userId })
@@ -157,6 +210,11 @@ export class URLShortenerAPI extends BaseAPI {
   }
 
   async listURLs(page = 1, size = 10, userId = null) {
+    if (this.protocol === 'gRPC') {
+      // List operations not available in gRPC Microservice A
+      throw new Error('URL listing is only available in REST mode');
+    }
+
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -169,6 +227,11 @@ export class URLShortenerAPI extends BaseAPI {
   }
 
   async deleteURL(shortCode) {
+    if (this.protocol === 'gRPC') {
+      // Delete operations not available in gRPC Microservice A
+      throw new Error('URL deletion is only available in REST mode');
+    }
+
     return await this.makeRequest('urlShortener', `/api/v1/url/${shortCode}`, {
       method: 'DELETE'
     });
@@ -182,20 +245,49 @@ export class QRGeneratorAPI extends BaseAPI {
   }
 
   async generateQR(data, format = 'PNG', size = 256, errorCorrection = 'MEDIUM') {
-    const payload = {
-      data,
-      format,
-      size,
-      errorCorrection
-    };
+    if (this.protocol === 'gRPC') {
+      // gRPC Microservice B: CreateQR(CreateQRRequest) returns (CreateQRReply)
+      // HTTP annotation: POST /v1/qrcode/encode
+      const response = await this.makeRequest('qrGenerator', '/v1/qrcode/encode', {
+        method: 'POST',
+        data: { url: data }  // gRPC proto expects 'url' field
+      });
 
-    return await this.makeRequest('qrGenerator', '/api/v1/qr/generate', {
-      method: 'POST',
-      data: payload
-    });
+      // Transform gRPC response to match REST format
+      return {
+        ...response,
+        data: {
+          id: `grpc-${Date.now()}`,
+          data: data,
+          format: 'PNG',
+          qrCode: response.data.qrCodeBase64,
+          size: size,
+          errorCorrection: errorCorrection,
+          createdAt: new Date().toISOString()
+        }
+      };
+    } else {
+      // REST API format
+      const payload = {
+        data,
+        format,
+        size,
+        errorCorrection
+      };
+
+      return await this.makeRequest('qrGenerator', '/api/v1/qr/generate', {
+        method: 'POST',
+        data: payload
+      });
+    }
   }
 
   async generateQRBatch(qrRequests) {
+    if (this.protocol === 'gRPC') {
+      // Batch operations not available in gRPC Microservice B
+      throw new Error('Batch QR generation is only available in REST mode');
+    }
+
     return await this.makeRequest('qrGenerator', '/api/v1/qr/batch', {
       method: 'POST',
       data: { requests: qrRequests }
@@ -203,12 +295,22 @@ export class QRGeneratorAPI extends BaseAPI {
   }
 
   async getQR(id) {
+    if (this.protocol === 'gRPC') {
+      // Get operations not available in gRPC Microservice B
+      throw new Error('QR retrieval is only available in REST mode');
+    }
+
     return await this.makeRequest('qrGenerator', `/api/v1/qr/${id}`, {
       method: 'GET'
     });
   }
 
   async listQRs(page = 1, size = 10) {
+    if (this.protocol === 'gRPC') {
+      // List operations not available in gRPC Microservice B
+      throw new Error('QR listing is only available in REST mode');
+    }
+
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString()
@@ -220,6 +322,11 @@ export class QRGeneratorAPI extends BaseAPI {
   }
 
   async deleteQR(id) {
+    if (this.protocol === 'gRPC') {
+      // Delete operations not available in gRPC Microservice B
+      throw new Error('QR deletion is only available in REST mode');
+    }
+
     return await this.makeRequest('qrGenerator', `/api/v1/qr/${id}`, {
       method: 'DELETE'
     });
