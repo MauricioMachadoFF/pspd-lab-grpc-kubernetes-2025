@@ -1,0 +1,250 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: link-shortener
+  labels:
+    app: link-shortener
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: link-shortener
+  template:
+    metadata:
+      labels:
+        app: link-shortener
+    spec:
+      containers:
+      - name: link-shortener
+        image: microservicea:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8081
+          name: https
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qrcode
+  labels:
+    app: qrcode
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qrcode
+  template:
+    metadata:
+      labels:
+        app: qrcode
+    spec:
+      containers:
+      - name: qrcode
+        image: microserviceb:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8081
+          name: https
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-rest
+  labels:
+    app: analytics-rest
+    service: analytics-rest
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analytics-rest
+  template:
+    metadata:
+      labels:
+        app: analytics-rest
+        service: analytics-rest
+    spec:
+      containers:
+      - name: analytics-rest
+        image: analytics-rest:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8081"
+        - name: LOG_LEVEL
+          value: "info"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qr-generator-rest
+  labels:
+    app: qr-generator-rest
+    service: qr-generator-rest
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qr-generator-rest
+  template:
+    metadata:
+      labels:
+        app: qr-generator-rest
+        service: qr-generator-rest
+    spec:
+      containers:
+      - name: qr-generator-rest
+        image: qr-generator-rest:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8082"
+        - name: LOG_LEVEL
+          value: "info"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8082
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-shortener-rest
+  labels:
+    app: url-shortener-rest
+    service: url-shortener-rest
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: url-shortener-rest
+  template:
+    metadata:
+      labels:
+        app: url-shortener-rest
+        service: url-shortener-rest
+    spec:
+      containers:
+      - name: url-shortener-rest
+        image: url-shortener-rest:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8083"
+        - name: LOG_LEVEL
+          value: "info"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}

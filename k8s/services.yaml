@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: link-shortener
+  labels:
+    app: link-shortener
+spec:
+  type: LoadBalancer
+  selector:
+    app: link-shortener
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qrcode
+  labels:
+    app: qrcode
+spec:
+  type: LoadBalancer
+  selector:
+    app: qrcode
+  ports:
+  - name: http
+    protocol: TCP
+    port: 81
+    targetPort: 8080
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-rest
+  labels:
+    app: analytics-rest
+    service: analytics-rest
+spec:
+  type: LoadBalancer
+  selector:
+    app: analytics-rest
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8081
+    targetPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qr-generator-rest
+  labels:
+    app: qr-generator-rest
+    service: qr-generator-rest
+spec:
+  type: LoadBalancer
+  selector:
+    app: qr-generator-rest
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8082
+    targetPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: url-shortener-rest
+  labels:
+    app: url-shortener-rest
+    service: url-shortener-rest
+spec:
+  type: LoadBalancer
+  selector:
+    app: url-shortener-rest
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8083
+    targetPort: 8083
