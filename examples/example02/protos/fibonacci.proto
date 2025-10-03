@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package fibonacci;
+
+service Fibonacci {
+
+  rpc GenerateSequence(FibonacciRequest) returns (stream FibonacciResponse);
+}
+
+message FibonacciRequest {
+  int32 max_value = 1;
+}
+
+message FibonacciResponse {
+  int32 number = 1;
+}
