@@ -1,3 +1,8 @@
+
+```bash
+docker compose build
+```
+
 Configurando o kubernets
 ```bash
 kubectl apply -f k8s/config/configmap.yaml
