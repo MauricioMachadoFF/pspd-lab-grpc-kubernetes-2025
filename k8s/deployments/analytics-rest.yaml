@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-rest
+  labels:
+    app: analytics-rest
+    service-type: rest
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-rest
+  template:
+    metadata:
+      labels:
+        app: analytics-rest
+        service-type: rest
+        tier: backend
+    spec:
+      containers:
+      - name: analytics
+        image: trabalho1-analytics-rest:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8081
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8081"
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: pspd-config
+              key: LOG_LEVEL
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

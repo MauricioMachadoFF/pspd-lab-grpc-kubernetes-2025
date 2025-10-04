@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-shortener-rest
+  labels:
+    app: url-shortener-rest
+    service-type: rest
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: url-shortener-rest
+  template:
+    metadata:
+      labels:
+        app: url-shortener-rest
+        service-type: rest
+        tier: backend
+    spec:
+      containers:
+      - name: url-shortener
+        image: trabalho1-url-shortener-rest:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8083
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8083"
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: pspd-config
+              key: LOG_LEVEL
+        - name: BASE_URL
+          value: "http://url-shortener-rest:8083"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

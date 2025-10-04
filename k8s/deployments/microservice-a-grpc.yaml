@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a-grpc
+  labels:
+    app: microservice-a-grpc
+    service-type: grpc
+    service-name: link-shortener
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-a-grpc
+  template:
+    metadata:
+      labels:
+        app: microservice-a-grpc
+        service-type: grpc
+        tier: backend
+    spec:
+      containers:
+      - name: link-shortener-grpc
+        image: trabalho1-microservice-a-grpc:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+          name: grpc
+          protocol: TCP
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080;http://+:8081"
+        - name: Kestrel__EndpointDefaults__Protocols
+          value: "Http1AndHttp2"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

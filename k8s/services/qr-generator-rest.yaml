@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qr-generator-rest
+  labels:
+    app: qr-generator-rest
+    service-type: rest
+spec:
+  selector:
+    app: qr-generator-rest
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8082
+    targetPort: 8082
+  type: ClusterIP

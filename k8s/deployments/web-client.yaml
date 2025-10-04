@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-client
+  labels:
+    app: web-client
+    service-type: frontend
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-client
+  template:
+    metadata:
+      labels:
+        app: web-client
+        service-type: frontend
+        tier: frontend
+    spec:
+      containers:
+      - name: web-client
+        image: pspd-web-client:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: REACT_APP_GRPC_LINK_SHORTENER
+          value: "http://microservice-a-grpc:5001"
+        - name: REACT_APP_GRPC_QR_GENERATOR
+          value: "http://microservice-b-grpc:5003"
+        - name: REACT_APP_REST_QR_GENERATOR
+          value: "http://qr-generator-rest:8082"
+        - name: REACT_APP_REST_URL_SHORTENER
+          value: "http://url-shortener-rest:8083"
+        - name: REACT_APP_USER_MANAGEMENT
+          value: "http://user-management-rest:8080"
+        - name: REACT_APP_ANALYTICS
+          value: "http://analytics-rest:8081"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

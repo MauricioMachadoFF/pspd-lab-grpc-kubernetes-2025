@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-a-grpc
+  labels:
+    app: microservice-a-grpc
+    service-type: grpc
+spec:
+  selector:
+    app: microservice-a-grpc
+  ports:
+  - name: grpc
+    protocol: TCP
+    port: 5001
+    targetPort: 8080
+  - name: health
+    protocol: TCP
+    port: 5002
+    targetPort: 8081
+  type: ClusterIP
