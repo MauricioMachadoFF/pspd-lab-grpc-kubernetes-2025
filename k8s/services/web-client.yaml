@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web-client
+  name: pspd-web-client
   labels:
-    app: web-client
+    app: pspd-web-client
     service-type: frontend
 spec:
   selector:
-    app: web-client
+    app: pspd-web-client
   ports:
   - name: http
     protocol: TCP
     port: 3000
     targetPort: 3000
-    nodePort: 30000
+    nodePort: 30010
   type: NodePort
