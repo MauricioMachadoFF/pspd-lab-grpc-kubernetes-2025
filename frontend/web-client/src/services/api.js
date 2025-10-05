@@ -1,20 +1,25 @@
 import axios from 'axios';
-
+import env from "react-dotenv";
 // API Configuration
+const getEnv = (key, defaultValue) => {
+  return window._env_?.[key] || process.env[key] || defaultValue;
+};
+
 const API_CONFIG = {
   REST: {
-    urlShortener: process.env.REACT_APP_REST_URL_SHORTENER || 'http://localhost:8083',
-    qrGenerator: process.env.REACT_APP_REST_QR_GENERATOR || 'http://localhost:8082',
-    userManagement: process.env.REACT_APP_USER_MANAGEMENT || 'http://localhost:8080',
-    analytics: process.env.REACT_APP_ANALYTICS || 'http://localhost:8081'
+    urlShortener: getEnv('REACT_APP_REST_URL_SHORTENER', 'http://localhost:8083'),
+    qrGenerator: getEnv('REACT_APP_REST_QR_GENERATOR', 'http://localhost:8082'),
+    userManagement: getEnv('REACT_APP_USER_MANAGEMENT', 'http://localhost:8080'),
+    analytics: getEnv('REACT_APP_ANALYTICS', 'http://localhost:8081')
   },
   gRPC: {
-    urlShortener: process.env.REACT_APP_GRPC_LINK_SHORTENER || 'http://localhost:5001',
-    qrGenerator: process.env.REACT_APP_GRPC_QR_GENERATOR || 'http://localhost:5003',
-    userManagement: process.env.REACT_APP_USER_MANAGEMENT || 'http://localhost:8080',
-    analytics: process.env.REACT_APP_ANALYTICS || 'http://localhost:8081'
+    urlShortener: getEnv('REACT_APP_GRPC_LINK_SHORTENER', 'http://localhost:5001'),
+    qrGenerator: getEnv('REACT_APP_GRPC_QR_GENERATOR', 'http://localhost:5003'),
+    userManagement: getEnv('REACT_APP_USER_MANAGEMENT', 'http://localhost:8080'),
+    analytics: getEnv('REACT_APP_ANALYTICS', 'http://localhost:8081')
   }
 };
+
 
 console.log('API Config:', API_CONFIG);
 // Performance tracking utility

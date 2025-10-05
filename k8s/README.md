@@ -1,24 +1,18 @@
+0 - Na fé
 
-Configurando o kubernets
+docker system prune -a && minikube delete && minikube start && eval $(minikube docker-env) && docker compose build && kubectl apply -f k8s/config/configmap.yaml && kubectl apply -f k8s/deployments && kubectl apply -f k8s/services && kubectl get all
 
-```bash
-minikube start
-```
-
+1 - Limpando tudo
 
 ```bash
-kubectl apply -f k8s/config/configmap.yaml
-```
-
-
-```bash
-kubectl apply -f k8s/deployments
-
+docker system prune -a
 ```
 
 ```bash
-kubectl apply -f k8s/services
+minikube delete
 ```
+
+2 - Limpeza leve
 
 Limpando o kubernets
 ```bash
@@ -31,6 +25,36 @@ kubectl delete -f k8s/deployments/
 kubectl delete -f k8s/config/configmap.yaml
 ```
 
+
+3 - Configurando....
+```bash
+minikube start
+```
+
+```bash
+eval $(minikube docker-env)
+```
+
+```bash
+docker compose build
+```
+
+
+```bash
+kubectl apply -f k8s/config/configmap.yaml
+```
+
+```bash
+kubectl apply -f k8s/deployments
+
+```
+
+```bash
+kubectl apply -f k8s/services
+```
+
+
+Outros comandos pra facilitar:
 
 # View everything
 kubectl get all
@@ -68,4 +92,4 @@ kubectl delete all --all --all-namespaces
 
 
 
-minikube service qr-generator --url
+minikube service web-client --url
