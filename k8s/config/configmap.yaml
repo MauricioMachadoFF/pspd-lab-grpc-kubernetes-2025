@@ -7,10 +7,17 @@ data:
   NODE_ENV: "production"
   LOG_LEVEL: "info"
   
-  GRPC_LINK_SHORTENER_URL: "http://microservice-a-grpc:5001"
-  GRPC_QR_GENERATOR_URL: "http://microservice-b-grpc:5003"
-  
-  REST_QR_GENERATOR_URL: "http://qr-generator-rest:8082"
-  REST_URL_SHORTENER_URL: "http://url-shortener-rest:8083"
-  USER_MANAGEMENT_URL: "http://user-management-rest:8080"
-  ANALYTICS_URL: "http://analytics-rest:8081"
+  #GRPC_LINK_SHORTENER_URL: "http://microservice-a-grpc:5001"
+  #GRPC_QR_GENERATOR_URL: "http://microservice-b-grpc:5003"
+  #REST_QR_GENERATOR_URL: "http://qr-generator-rest:8082"
+  #REST_URL_SHORTENER_URL: "http://url-shortener-rest:8083"
+  #USER_MANAGEMENT_URL: "http://user-management-rest:8080"
+  #ANALYTICS_URL: "http://analytics-rest:8081"
+
+
+  GRPC_LINK_SHORTENER_URL: "http://192.168.49.2:30002"
+  GRPC_QR_GENERATOR_URL: "http://192.168.49.2:30007"
+  REST_QR_GENERATOR_URL: "http://192.168.49.2:30007"
+  REST_URL_SHORTENER_URL: "http://192.168.49.2:30004"
+  USER_MANAGEMENT_URL: "http://192.168.49.2:30005"
+  ANALYTICS_URL: "http://192.168.49.2:30006"

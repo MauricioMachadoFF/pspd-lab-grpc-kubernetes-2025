@@ -13,4 +13,6 @@ spec:
     protocol: TCP
     port: 8082
     targetPort: 8082
+    nodePort: 30007
+
   type: NodePort

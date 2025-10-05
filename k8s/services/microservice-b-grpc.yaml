@@ -16,5 +16,5 @@ spec:
   - name: health
     protocol: TCP
     port: 5004
-    targetPort: 8081
+    targetPort: 30003
   type: ClusterIP

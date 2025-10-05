@@ -26,21 +26,37 @@ spec:
         - containerPort: 3000
           name: http
           protocol: TCP
+        # env:
+        # - name: NODE_ENV
+        #   value: "production"
+        # - name: REACT_APP_GRPC_LINK_SHORTENER
+        #   value: "http://microservice-a-grpc:5001"
+        # - name: REACT_APP_GRPC_QR_GENERATOR
+        #   value: "http://microservice-b-grpc:5003"
+        # - name: REACT_APP_REST_QR_GENERATOR
+        #   value: "http://qr-generator-rest:8082"
+        # - name: REACT_APP_REST_URL_SHORTENER
+        #   value: "http://url-shortener-rest:8083"
+        # - name: REACT_APP_USER_MANAGEMENT
+        #   value: "http://user-management-rest:8080"
+        # - name: REACT_APP_ANALYTICS
+        #   value: "http://analytics-rest:8081"
+        
         env:
         - name: NODE_ENV
           value: "production"
         - name: REACT_APP_GRPC_LINK_SHORTENER
-          value: "http://microservice-a-grpc:5001"
+          value: "http://192.168.49.2:30002"
         - name: REACT_APP_GRPC_QR_GENERATOR
-          value: "http://microservice-b-grpc:5003"
+          value: "http://192.168.49.2:30003"
         - name: REACT_APP_REST_QR_GENERATOR
-          value: "http://qr-generator-rest:8082"
+          value: "http://192.168.49.2:30007"
         - name: REACT_APP_REST_URL_SHORTENER
-          value: "http://url-shortener-rest:8083"
+          value: "http://192.168.49.2:30004"
         - name: REACT_APP_USER_MANAGEMENT
-          value: "http://user-management-rest:8080"
+          value: "http://192.168.49.2:30005"
         - name: REACT_APP_ANALYTICS
-          value: "http://analytics-rest:8081"
+          value: "http://192.168.49.2:30006"
         livenessProbe:
           httpGet:
             path: /
