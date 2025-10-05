@@ -3,24 +3,24 @@ kind: Deployment
 metadata:
   name: web-client
   labels:
-    app: web-client
+    app: web-client  
     service-type: frontend
     tier: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: web-client
+      app: web-client  
   template:
     metadata:
       labels:
-        app: web-client
+        app: web-client  
         service-type: frontend
         tier: frontend
     spec:
       containers:
       - name: web-client
-        image: pspd-web-client:latest
+        image: trabalho1-web-client:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 3000

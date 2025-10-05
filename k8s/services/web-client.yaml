@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: pspd-web-client
+  name: web-client
   labels:
-    app: pspd-web-client
+    app: web-client
     service-type: frontend
 spec:
   selector:
-    app: pspd-web-client
+    app: web-client
   ports:
   - name: http
     protocol: TCP

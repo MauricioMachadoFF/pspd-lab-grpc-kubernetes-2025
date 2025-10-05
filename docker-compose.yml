@@ -179,7 +179,7 @@ services:
     build:
       context: ./frontend/web-client
       dockerfile: Dockerfile
-    container_name: pspd-web-client
+    container_name: web-client
     ports:
       - "3000:3000"
     environment:

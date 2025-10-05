@@ -274,7 +274,7 @@ health: ## Check health of all services
 
 status: ## Show status of all containers
 	@echo "$(BLUE)Container Status:$(NC)"
-	@docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter "name=microservice-\|qr-generator-rest\|url-shortener-rest\|user-management-rest\|analytics-rest\|pspd-web-client"
+	@docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter "name=microservice-\|qr-generator-rest\|url-shortener-rest\|user-management-rest\|analytics-rest\|web-client"
 
 # ================================
 # DEVELOPMENT ENVIRONMENT

@@ -3,23 +3,20 @@ import axios from 'axios';
 // API Configuration
 const API_CONFIG = {
   REST: {
-    urlShortener: 'http://localhost:8083',
-    qrGenerator: 'http://localhost:8082',
-    userManagement: 'http://localhost:8080',
-    analytics: 'http://localhost:8081'
+    urlShortener: process.env.REACT_APP_REST_URL_SHORTENER || 'http://localhost:8083',
+    qrGenerator: process.env.REACT_APP_REST_QR_GENERATOR || 'http://localhost:8082',
+    userManagement: process.env.REACT_APP_USER_MANAGEMENT || 'http://localhost:8080',
+    analytics: process.env.REACT_APP_ANALYTICS || 'http://localhost:8081'
   },
   gRPC: {
-    // gRPC endpoints - using JSON transcoding (gRPC accessible via HTTP/REST)
-    // Microservice A (Link Shortener) - Port 5001
-    urlShortener: 'http://localhost:5001',
-    // Microservice B (QR Generator) - Port 5003
-    qrGenerator: 'http://localhost:5003',
-    // REST services (no gRPC equivalent)
-    userManagement: 'http://localhost:8080',
-    analytics: 'http://localhost:8081'
+    urlShortener: process.env.REACT_APP_GRPC_LINK_SHORTENER || 'http://localhost:5001',
+    qrGenerator: process.env.REACT_APP_GRPC_QR_GENERATOR || 'http://localhost:5003',
+    userManagement: process.env.REACT_APP_USER_MANAGEMENT || 'http://localhost:8080',
+    analytics: process.env.REACT_APP_ANALYTICS || 'http://localhost:8081'
   }
 };
 
+console.log('API Config:', API_CONFIG);
 // Performance tracking utility
 class PerformanceTracker {
   static startTimer() {
