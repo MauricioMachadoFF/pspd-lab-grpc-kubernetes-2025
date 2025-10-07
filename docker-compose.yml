@@ -9,6 +9,7 @@ services:
   # ========================================
 
   microservice-a-grpc:
+    image: trabalho1-microservice-a-grpc:latest
     build:
       context: ./MicroserviceA_LinkShortener
       dockerfile: MicroserviceA_LinkShortener/Dockerfile
@@ -36,6 +37,7 @@ services:
       - "service.comparison=academic"
 
   microservice-b-grpc:
+    image: trabalho1-microservice-b-grpc:latest
     build:
       context: ./MicroserviceB_QRCode
       dockerfile: MicroserviceB_QRCode/Dockerfile
@@ -67,6 +69,7 @@ services:
   # ========================================
 
   qr-generator-rest:
+    image: trabalho1-qr-generator-rest:latest
     build:
       context: ./services/rest/qr-generator
       dockerfile: Dockerfile
@@ -92,6 +95,7 @@ services:
       - "service.protocol=http"
 
   url-shortener-rest:
+    image: trabalho1-url-shortener-rest:latest
     build:
       context: ./services/rest/url-shortener
       dockerfile: Dockerfile
@@ -122,6 +126,7 @@ services:
   # ========================================
 
   user-management-rest:
+    image: trabalho1-user-management-rest:latest
     build:
       context: ./services/rest/user-management
       dockerfile: Dockerfile
@@ -147,6 +152,7 @@ services:
       - "service.protocol=http"
 
   analytics-rest:
+    image: trabalho1-analytics-rest:latest
     build:
       context: ./services/rest/analytics
       dockerfile: Dockerfile
@@ -176,6 +182,7 @@ services:
   # ========================================
 
   web-client:
+    image: trabalho1-web-client:latest
     build:
       context: ./frontend/web-client
       dockerfile: Dockerfile

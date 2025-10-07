@@ -161,9 +161,9 @@ push: ## Push all images to registry
 # DOCKER COMPOSE COMMANDS
 # ================================
 
-up: build ## Start all services (gRPC + REST + Frontend) with docker-compose
+up: build ## Start all services (gRPC + REST + Frontend) with docker compose
 	@echo "$(BLUE)Starting all services...$(NC)"
-	@docker-compose up -d
+	@docker compose up -d
 	@echo "$(GREEN)✓ All services are running$(NC)"
 	@echo ""
 	@echo "$(YELLOW)═══════════════════════════════════════════════════$(NC)"
@@ -185,35 +185,35 @@ up: build ## Start all services (gRPC + REST + Frontend) with docker-compose
 
 down: ## Stop all services
 	@echo "$(BLUE)Stopping all services...$(NC)"
-	@docker-compose down
+	@docker compose down
 	@echo "$(GREEN)✓ All services stopped$(NC)"
 
 restart: down up ## Restart all services
 
 logs: ## View logs from all services
 	@echo "$(BLUE)Viewing logs from all services...$(NC)"
-	@docker-compose logs -f
+	@docker compose logs -f
 
 logs-grpc-link: ## View gRPC Link Shortener logs
-	@docker-compose logs -f $(GRPC_LINK_SERVICE)
+	@docker compose logs -f $(GRPC_LINK_SERVICE)
 
 logs-grpc-qr: ## View gRPC QR Generator logs
-	@docker-compose logs -f $(GRPC_QR_SERVICE)
+	@docker compose logs -f $(GRPC_QR_SERVICE)
 
 logs-qr-rest: ## View QR Generator REST logs
-	@docker-compose logs -f $(QR_REST_SERVICE)
+	@docker compose logs -f $(QR_REST_SERVICE)
 
 logs-url-rest: ## View URL Shortener REST logs
-	@docker-compose logs -f $(URL_REST_SERVICE)
+	@docker compose logs -f $(URL_REST_SERVICE)
 
 logs-user: ## View User Management logs
-	@docker-compose logs -f $(USER_MGMT_SERVICE)
+	@docker compose logs -f $(USER_MGMT_SERVICE)
 
 logs-analytics: ## View Analytics logs
-	@docker-compose logs -f $(ANALYTICS_SERVICE)
+	@docker compose logs -f $(ANALYTICS_SERVICE)
 
 logs-frontend: ## View Frontend Web Client logs
-	@docker-compose logs -f $(WEB_CLIENT)
+	@docker compose logs -f $(WEB_CLIENT)
 
 # ================================
 # STANDALONE DOCKER COMMANDS
@@ -319,7 +319,7 @@ benchmark: ## Run performance benchmarks
 
 clean: ## Clean up Docker images and containers
 	@echo "$(BLUE)Cleaning up Docker resources...$(NC)"
-	@docker-compose down -v --remove-orphans 2>/dev/null || true
+	@docker compose down -v --remove-orphans 2>/dev/null || true
 	@docker system prune -f
 	@echo "$(GREEN)✓ Docker cleanup completed$(NC)"
 

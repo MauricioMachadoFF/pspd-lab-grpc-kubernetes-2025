@@ -13,8 +13,9 @@ spec:
     protocol: TCP
     port: 5001
     targetPort: 8080
+    nodePort: 30002
   - name: health
     protocol: TCP
     port: 5002
     targetPort: 30002
-  type: ClusterIP
+  type: NodePort
