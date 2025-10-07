@@ -1,7 +1,30 @@
 using MicroserviceA_LinkShortener.Services;
 using Microsoft.OpenApi.Models;
+using System.Net; // <<< ADICIONADO para usar IPAddress.Any
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ===================================================================
+// 1. CONFIGURAÇÃO DO KESTREL (VERSÃO CORRIGIDA)
+// ===================================================================
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Porta 8080 para tráfego HTTP/1.1 (navegador, health checks, swagger)
+    options.Listen(IPAddress.Any, 8080, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+    });
+
+    // Porta 8082 para tráfego gRPC (comunicação interna do gateway)
+    options.Listen(IPAddress.Any, 8082, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+    });
+});
+
+// ===================================================================
+// 2. REGISTO DE SERVIÇOS (O SEU CÓDIGO ORIGINAL)
+// ===================================================================
 
 // Add CORS policy for frontend access
 builder.Services.AddCors(options =>
@@ -15,7 +38,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddGrpc().AddJsonTranscoding();
+builder.Services.AddGrpc();
+builder.Services.AddSingleton<LinkSService>();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
@@ -24,8 +48,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Microservice A - Link Shortener gRPC API",
         Version = "v1",
-        Description = "gRPC service for URL shortening with JSON transcoding support. " +
-                      "This service uses Protocol Buffers (Protobuf) for efficient communication and supports both gRPC and HTTP/REST calls.",
+        Description = "gRPC service for URL shortening. This service now uses a hybrid port configuration.",
         Contact = new OpenApiContact
         {
             Name = "PSPD Lab - gRPC vs REST Comparison",
@@ -36,40 +59,40 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Enable routing FIRST
+// ===================================================================
+// 3. CONFIGURAÇÃO DO PIPELINE DE MIDDLEWARE (O SEU CÓDIGO ORIGINAL)
+// ===================================================================
+
 app.UseRouting();
-
-// Enable CORS AFTER routing
 app.UseCors("AllowFrontend");
-
-// Enable Swagger for all environments (including Docker/Production)
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Link Shortener gRPC API v1");
-    c.RoutePrefix = "swagger"; // Access at /swagger
+    c.RoutePrefix = "swagger";
     c.DocumentTitle = "Microservice A - Link Shortener gRPC API";
 });
 
-// Map gRPC service with CORS enabled
 app.MapGrpcService<LinkSService>().RequireCors("AllowFrontend");
 
-// Root endpoint with useful information
+app.MapGet("/{shortCode}", (string shortCode, LinkSService service) =>
+{
+    var originalUrl = service.GetOriginalUrl(shortCode);
+    if (string.IsNullOrEmpty(originalUrl))
+    {
+        return Results.NotFound("Short URL not found.");
+    }
+    return Results.Redirect(originalUrl, permanent: true);
+});
+
 app.MapGet("/", () => Results.Json(new
 {
     service = "Microservice A - Link Shortener",
-    protocol = "gRPC with JSON Transcoding",
+    protocol = "gRPC (HTTP/2 on port 8082) and HTTP/1.1 (on port 8080)",
     version = "v1",
-    swagger = "/swagger",
-    endpoints = new
-    {
-        createLink = "POST /v1/links",
-        getUrl = "GET /{shortUrl}"
-    },
-    documentation = "https://go.microsoft.com/fwlink/?linkid=2086909"
+    swagger = "/swagger"
 }));
 
-// Health check endpoint
 app.MapGet("/health", () => Results.Json(new
 {
     status = "healthy",

@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddGrpc().AddJsonTranscoding();
+builder.Services.AddGrpc();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>

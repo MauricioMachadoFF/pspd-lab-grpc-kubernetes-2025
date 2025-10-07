@@ -15,12 +15,9 @@ services:
       dockerfile: MicroserviceA_LinkShortener/Dockerfile
     container_name: microservice-a-linkshortener-grpc
     ports:
-      - "5001:8080"  # gRPC endpoint
-      - "5002:8081"  # Health/metrics endpoint
+      - "5001:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080;http://+:8081
-      - Kestrel__EndpointDefaults__Protocols=Http1AndHttp2
+      - BASE_URL=http://localhost:5001
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
@@ -48,7 +45,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080;http://+:8081
-      - Kestrel__EndpointDefaults__Protocols=Http1AndHttp2
+      - Kestrel__EndpointDefaults__Protocols=Http2
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
@@ -190,19 +187,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - REACT_APP_GRPC_LINK_SHORTENER=http://localhost:5001
-      - REACT_APP_GRPC_QR_GENERATOR=http://localhost:5003
-      - REACT_APP_REST_QR_GENERATOR=http://localhost:8082
-      - REACT_APP_REST_URL_SHORTENER=http://localhost:8083
-      - REACT_APP_USER_MANAGEMENT=http://localhost:8080
-      - REACT_APP_ANALYTICS=http://localhost:8081
+    - NODE_ENV=production
+    - REACT_APP_API_GATEWAY_URL=http://localhost:8000
+    - REACT_APP_ANALYTICS_URL=http://localhost:8081
     depends_on:
-      - microservice-a-grpc
-      - microservice-b-grpc
-      - qr-generator-rest
-      - url-shortener-rest
-      - user-management-rest
+      - api-gateway
       - analytics-rest
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
@@ -221,6 +210,26 @@ services:
   # ========================================
   # OPTIONAL API GATEWAY
   # ========================================
+
+  api-gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - URL_SHORTENER_REST_API=http://url-shortener-rest:8083
+      - QR_GENERATOR_REST_API=http://qr-generator-rest:8082
+      - LINK_SHORTENER_GRPC_API=microservice-a-grpc:8082
+      - QR_GENERATOR_GRPC_API=microservice-b-grpc:8080
+    depends_on:
+      - microservice-a-grpc
+      - microservice-b-grpc
+      - url-shortener-rest
+      - qr-generator-rest
+    networks:
+      - pspd-services
 
   rest-api-gateway:
     image: nginx:alpine
