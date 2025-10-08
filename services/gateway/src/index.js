@@ -33,12 +33,14 @@ const grpcQrClient = new qrProto.QrCodeGenerator(QR_GENERATOR_GRPC_API, grpc.cre
 // --- Rotas do Gateway ---
 
 app.post('/url', async (req, res) => {
-    const protocol = req.headers['x-protocol-choice'] || 'rest';
+    const protocol = (req.headers['x-protocol-choice'] || 'rest').toLowerCase();
     const { url } = req.body;
     
     const startTime = performance.now();
     let responseData;
 
+    console.log(protocol, req.headers)
+    
     try {
         if (protocol === 'grpc') {
             console.log(`Forwarding to gRPC URL Shortener: ${LINK_SHORTENER_GRPC_API}`);
@@ -66,12 +68,14 @@ app.post('/url', async (req, res) => {
 });
 
 app.post('/qr', async (req, res) => {
-    const protocol = req.headers['x-protocol-choice'] || 'rest';
+    const protocol = (req.headers['x-protocol-choice'] || 'rest').toLowerCase();
     const { text } = req.body;
 
     const startTime = performance.now();
     let responseData;
-
+    
+    console.log(protocol, req.headers)
+    
     try {
         if (protocol === 'grpc') {
             console.log(`Forwarding to gRPC QR Generator: ${QR_GENERATOR_GRPC_API}`);
