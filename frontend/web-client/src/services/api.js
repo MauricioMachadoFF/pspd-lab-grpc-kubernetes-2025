@@ -1,18 +1,21 @@
 import axios from 'axios';
 
-const API_GATEWAY_URL = window._env_.REACT_APP_API_GATEWAY_URL || 'http://localhost:8000';
-const ANALYTICS_URL = window._env_.REACT_APP_ANALYTICS_URL || 'http://localhost:8081';
+
+const getEnv = (key, defaultValue) => {
+  return window._env_?.[key] || process.env[key] || defaultValue;
+};
 
 // Cliente para o nosso novo gateway
 const gatewayClient = axios.create({
-  baseURL: API_GATEWAY_URL,
+  baseURL: getEnv('API_GATEWAY_URL', 'http://localhost:8000')
 });
 
 // Cliente direto para o serviço de analytics (não precisa de passar pelo gateway)
 const analyticsClient = axios.create({
-  baseURL: ANALYTICS_URL,
+  baseURL: getEnv('REACT_APP_ANALYTICS', 'http://localhost:8081') ,
 });
 
+console.log(window._env_)
 /**
  * Normaliza a resposta do Gateway para o formato que a UI espera.
  */
