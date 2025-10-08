@@ -12,10 +12,10 @@ spec:
   - name: grpc
     protocol: TCP
     port: 5001
-    targetPort: 8080
+    targetPort: 8082
     nodePort: 30002
   - name: health
     protocol: TCP
     port: 5002
-    targetPort: 30002
+    targetPort: 8080
   type: NodePort

@@ -33,10 +33,14 @@ spec:
         env:
         - name: ASPNETCORE_ENVIRONMENT
           value: "Development"
-        - name: ASPNETCORE_URLS
-          value: "http://+:8080;http://+:8081"
-        - name: Kestrel__EndpointDefaults__Protocols
-          value: "Http1AndHttp2"
+        - name: Kestrel__Endpoints__grpc__Url
+          value: "http://*:8080"
+        - name: Kestrel__Endpoints__grpc__Protocols
+          value: "Http2"
+        - name: Kestrel__Endpoints__health__Url
+          value: "http://*:8081"
+        - name: Kestrel__Endpoints__health__Protocols
+          value: "Http1"
         livenessProbe:
           httpGet:
             path: /health

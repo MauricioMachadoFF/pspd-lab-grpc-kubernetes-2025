@@ -212,6 +212,7 @@ services:
   # ========================================
 
   api-gateway:
+    image: trabalho1-api-gateway:latest
     build:
       context: ./services/gateway
       dockerfile: Dockerfile

@@ -32,9 +32,9 @@ spec:
         - name: QR_GENERATOR_REST_API
           value: "http://qr-generator-rest:8082"
         - name: LINK_SHORTENER_GRPC_API
-          value: "microservice-a-grpc:8080"
+          value: "microservice-a-grpc:5001"
         - name: QR_GENERATOR_GRPC_API
-          value: "microservice-b-grpc:8080"
+          value: "microservice-b-grpc:5003"
         livenessProbe:
           httpGet:
             path: /health

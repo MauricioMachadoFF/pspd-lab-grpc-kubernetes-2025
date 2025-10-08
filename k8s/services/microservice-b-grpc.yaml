@@ -17,5 +17,5 @@ spec:
   - name: health
     protocol: TCP
     port: 5004
-    targetPort: 30003
+    targetPort: 8081
   type: NodePort
