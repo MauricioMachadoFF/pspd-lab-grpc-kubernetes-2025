@@ -1,41 +1,53 @@
 ﻿using Grpc.Core;
-using MicroserviceA_LinkShortener;
+using System;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace MicroserviceA_LinkShortener.Services;
 
 public class LinkSService : LinkShortener.LinkShortenerBase
 {
+    private static readonly ConcurrentDictionary<string, string> Urls = new();
+    private readonly string _baseUrl;
+
+    // O construtor agora recebe a URL base
+    public LinkSService()
+    {
+        _baseUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost:5001";
+    }
+
     public override Task<CreateLinkReply> CreateLink(CreateLinkRequest request, ServerCallContext context)
     {
-        var shortUrl = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6];
+        var shortCode = GenerateShortURL();
+        Urls.TryAdd(shortCode, request.Url);
 
-        Repository.Add(shortUrl, request.Url);
+        // Constrói a URL completa antes de retornar
+        var fullShortUrl = $"{_baseUrl}/{shortCode}";
 
         return Task.FromResult(new CreateLinkReply
         {
-            ShortUrl = shortUrl
+            ShortUrl = fullShortUrl // Agora retorna a URL completa
         });
     }
 
-    public override Task<GetUrlReply> GetUrl(GetUrlRequest request, ServerCallContext context)
+    private static string GenerateShortURL()
     {
-        var originalUrl = Repository.Get(request.ShortUrl);
+        var bytes = new byte[6];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
 
-        return Task.FromResult(new GetUrlReply
-        {
-            Url = originalUrl ?? string.Empty
-        });
+        string urlSafeBase64 = Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+
+        return urlSafeBase64;
     }
-}
 
-
-public static class Repository
-{
-    private static readonly Dictionary<string, string> _store = [];
-    public static void Add(string shortUrl, string originalUrl)
+    public string GetOriginalUrl(string shortCode)
     {
-        _store[shortUrl] = originalUrl;
+        Urls.TryGetValue(shortCode, out var originalUrl);
+        return originalUrl ?? string.Empty;
     }
-    public static string Get(string shortUrl)
-        => _store.TryGetValue(shortUrl, out var originalUrl) ? originalUrl : string.Empty;
 }

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+    service-type: gateway
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        service-type: gateway
+        tier: backend
+    spec:
+      containers:
+      - name: api-gateway
+        image: trabalho1-api-gateway:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: URL_SHORTENER_REST_API
+          value: "http://url-shortener-rest:8083"
+        - name: QR_GENERATOR_REST_API
+          value: "http://qr-generator-rest:8082"
+        - name: LINK_SHORTENER_GRPC_API
+          value: "microservice-a-grpc:5001"
+        - name: QR_GENERATOR_GRPC_API
+          value: "microservice-b-grpc:5003"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3

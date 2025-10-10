@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 8083;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -44,6 +44,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
   }
 }));
 
+app.use('/health', healthRoutes);
 // Short URL redirect route (for direct short URLs like /abc123)
 app.get('/:shortCode', async (req, res, next) => {
   const shortCode = req.params.shortCode;
@@ -66,7 +67,6 @@ app.get('/:shortCode', async (req, res, next) => {
 
 // Routes
 app.use('/api/v1/url', urlRoutes);
-app.use('/health', healthRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

@@ -32,3 +32,23 @@ Ao final, verifique a execução dos serviços com:
 ```powershell
 docker ps
 ```
+
+### 3. Execução kubernets
+```powershell
+kubectl apply -f deployments.yaml
+```
+
+```powershell
+kubectl apply -f services.yaml
+```
+
+minikube image load microservicea:latest
+minikube image load microserviceb:latest
+minikube image load analytics-rest:latest
+minikube image load qr-generator-rest:latest
+minikube image load url-shortener-rest:latest
+
+kubectl delete -f deployment.yaml
+kubectl apply -f deployment.yaml
+
+kubectl get pods
