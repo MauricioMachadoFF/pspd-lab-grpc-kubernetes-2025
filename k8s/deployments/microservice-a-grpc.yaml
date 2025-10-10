@@ -25,22 +25,20 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
+          name: http
+        - containerPort: 8082
           name: grpc
-          protocol: TCP
-        - containerPort: 8081
-          name: health
-          protocol: TCP
         env:
         - name: ASPNETCORE_ENVIRONMENT
           value: "Development"
         - name: ASPNETCORE_URLS
-          value: "http://+:8080;http://+:8081"
+          value: "http://+:8080;http://+:8082"
         - name: Kestrel__EndpointDefaults__Protocols
           value: "Http1AndHttp2"
         livenessProbe:
           httpGet:
             path: /health
-            port: 8081
+            port: 8080
           initialDelaySeconds: 40
           periodSeconds: 30
           timeoutSeconds: 10
@@ -48,7 +46,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
-            port: 8081
+            port: 8080
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5

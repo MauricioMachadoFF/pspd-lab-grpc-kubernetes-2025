@@ -57,6 +57,8 @@ spec:
           value: "http://192.168.49.2:30005"
         - name: REACT_APP_ANALYTICS
           value: "http://192.168.49.2:30006"
+        - name: API_GATEWAY_URL
+          value: "http://192.168.49.2:30008"  
         livenessProbe:
           httpGet:
             path: /
